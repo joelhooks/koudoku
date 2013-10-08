@@ -44,11 +44,7 @@ module Koudoku::Subscription
 
             prepare_for_cancelation
 
-            # Remove the current pricing.
-            self.current_price = nil
-
-            # delete the subscription.
-            customer.cancel_subscription
+            execute_cancellation customer
 
             finalize_cancelation!
 
@@ -201,6 +197,14 @@ module Koudoku::Subscription
   end
   
   def prepare_for_card_update
+  end
+
+  def execute_cancellation(customer)
+    # Remove the current pricing.
+    self.current_price = nil
+
+    # delete the subscription.
+    customer.cancel_subscription
   end
 
   def finalize_plan_change!
