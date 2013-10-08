@@ -98,7 +98,7 @@ module Koudoku
       @subscription = ::Subscription.new(subscription_params)
       @subscription.user = @owner
       if @subscription.save
-        flash[:notice] = "You've been successfully upgraded."
+        flash[:notice] = t(:upgrade_success)
         redirect_to owner_subscription_path(@owner, @subscription)
       else
         flash[:error] = 'There was a problem processing this transaction.'
@@ -110,7 +110,7 @@ module Koudoku
     end
 
     def cancel
-      flash[:notice] = "You've successfully cancelled your subscription."
+      flash[:notice] = t(:cancel_success)
       @subscription.plan_id = nil
       @subscription.save
       redirect_to owner_subscription_path(@owner, @subscription)
@@ -121,10 +121,10 @@ module Koudoku
 
     def update
       if @subscription.update_attributes(subscription_params)
-        flash[:notice] = "You've successfully updated your subscription."
+        flash[:notice] = t(:update_success)
         redirect_to owner_subscription_path(@owner, @subscription)
       else
-        flash[:error] = 'There was a problem processing this transaction.'
+        flash[:error] = t(:transaction_problem)
         render :edit
       end
     end
