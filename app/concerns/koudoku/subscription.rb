@@ -61,34 +61,38 @@ module Koudoku::Subscription
             prepare_for_new_subscription
             prepare_for_upgrade
 
-            begin
+            if self.current_price > 0.0
 
-              customer_attributes = {
-                description: subscription_owner_description,
-                email: subscription_owner_email,
-                card: credit_card_token, # obtained with Stripe.js
-                plan: plan.stripe_id
-              }
 
-              # If the class we're being included in supports coupons ..
-              if respond_to? :coupon
-                if coupon.present? and coupon.free_trial?
-                  customer_attributes[:trial_end] = coupon.free_trial_ends.to_i
+              begin
+
+                customer_attributes = {
+                  description: subscription_owner_description,
+                  email: subscription_owner_email,
+                  card: credit_card_token, # obtained with Stripe.js
+                  plan: plan.stripe_id
+                }
+
+                # If the class we're being included in supports coupons ..
+                if respond_to? :coupon
+                  if coupon.present? and coupon.free_trial?
+                    customer_attributes[:trial_end] = coupon.free_trial_ends.to_i
+                  end
                 end
+
+                # create a customer at that package level.
+                customer = Stripe::Customer.create(customer_attributes)
+
+              rescue Stripe::CardError => card_error
+                errors[:base] << card_error.message
+                card_was_declined
+                return false
               end
 
-              # create a customer at that package level.
-              customer = Stripe::Customer.create(customer_attributes)
-
-            rescue Stripe::CardError => card_error
-              errors[:base] << card_error.message
-              card_was_declined
-              return false
+              # store the customer id.
+              self.stripe_id = customer.id
+              self.last_four = customer.cards.retrieve(customer.default_card).last4
             end
-
-            # store the customer id.
-            self.stripe_id = customer.id
-            self.last_four = customer.cards.retrieve(customer.default_card).last4
 
             finalize_new_subscription!
             finalize_upgrade!
