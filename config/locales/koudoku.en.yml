@@ -1,0 +1,9 @@
+en:
+  koudoku:
+    cancel_success: "You've successfully cancelled your subscription."
+    upgrade_success: "You've been successfully upgraded."
+    update_success: "You've successfully updated your subscription."
+    transaction_problem: "There was a problem processing this transaction."
+    upgrade: "upgrade"
+    downgrade: "downgrade"
+    start_trial: "start trial"
