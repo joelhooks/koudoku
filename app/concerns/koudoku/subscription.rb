@@ -82,13 +82,18 @@ module Koudoku::Subscription
 
             rescue Stripe::CardError => card_error
               errors[:base] << card_error.message
+              self.error = card_error.message
               card_was_declined
               return false
             end
 
             # store the customer id.
             self.stripe_id = customer.id
-            self.last_four = customer.cards.retrieve(customer.default_card).last4
+
+            default_card = customer.cards.retrieve(customer.default_card)
+            self.last_four = default_card.last4
+            self.card_type = default_card.card_type
+            self.card_expiration = Date.new(default_card.exp_year, default_card.exp_month, 1),
 
             finalize_new_subscription!
             finalize_upgrade!
@@ -119,7 +124,10 @@ module Koudoku::Subscription
         customer.save
 
         # update the last four based on this new card.
-        self.last_four = customer.cards.retrieve(customer.default_card).last4
+        default_card = customer.cards.retrieve(customer.default_card)
+        self.last_four = default_card.last4
+        self.card_type = default_card.card_type
+        self.card_expiration = Date.new(default_card.exp_year, default_card.exp_month, 1),
         finalize_card_update!
 
       end
